@@ -1,9 +1,13 @@
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import React, { useState } from "react";
-import { auth } from "../firebase";
+import { auth, db, storage } from "../firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { useNavigate, Link } from "react-router-dom";
+import { ref, uploadBytesResumable } from "firebase/storage";
 
 const Register = () => {
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -14,13 +18,23 @@ const Register = () => {
     const password = e.target[2].value;
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
+      const res = await createUserWithEmailAndPassword(auth, email, password);
+
+      const storageRef = ref(storage, displayName);
+
+      const uploadTask = uploadBytesResumable(storageRef);
+
+      await updateProfile(res.user, {
+        displayName,
+      });
+      await setDoc(doc(db, "users", res.user.uid), {
+        uid: res.user.uid,
+        displayName,
         email,
-        password
-      );
-      const user = userCredential.user;
-      console.log(user);
+      });
+
+      await setDoc(doc(db, "userConversations", res.user.uid), {});
+      navigate("/");
     } catch (error) {
       const errorCode = error.code;
       const errorMessage = error.message;
@@ -40,7 +54,9 @@ const Register = () => {
           <button type="submit">Sign up</button>
           {error && <p>{error.errorMessage}</p>}
         </form>
-        <p>Already have an account? Login</p>
+        <p>
+          Already have an account? <Link to="/login">Login</Link>
+        </p>
       </div>
     </div>
   );

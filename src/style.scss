@@ -28,6 +28,10 @@ body {
   }
 }
 
+@mixin random-bgr() {
+  background: rgb(random(255), random(255), random(255));
+}
+
 /*----Register & Login ----*/
 .formContainer {
   height: 100vh;
@@ -139,6 +143,18 @@ body {
             width: 30px;
             border-radius: 50%;
             object-fit: cover;
+          }
+
+          .photoPlaceholder {
+            // background-color: black;
+            @include random-bgr();
+            color: white;
+            height: 30px;
+            width: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
 
           button {
